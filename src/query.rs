@@ -70,7 +70,7 @@ impl OpenMeteo {
         Ok(())
     }
 
-    // set start date YY-MM-DD
+    // set start date YYYY-MM-DD
 
     pub fn start_date(mut self, start_date: &str) -> Result<OpenMeteo, Box<dyn Error>> {
         if self.set_start_date {
@@ -91,7 +91,7 @@ impl OpenMeteo {
         })
     }
 
-    // set end date YY-MM-DD
+    // set end date YYYY-MM-DD
 
     pub fn end_date(mut self, end_date: &str) -> Result<OpenMeteo, Box<dyn Error>> {
         if self.set_end_date {
