@@ -63,7 +63,7 @@ impl OpenMeteo {
 
         let mut vec_len: usize = 0;
 
-        match json{
+        match json {
             Value::Array(ref val) => vec_len = val.len(),
             _ => {}
         }
