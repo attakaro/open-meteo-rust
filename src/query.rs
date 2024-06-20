@@ -51,20 +51,21 @@ impl OpenMeteo {
     pub async fn location(self, place_name: &str) -> Result<OpenMeteo, Box<dyn Error>> {
         let url = format!("https://geocode.maps.co/search?q={}", place_name);
 
-        let response = reqwest::get(url).await?;
+        let mut response = reqwest::get(url).await?;
 
         if response.status() != reqwest::StatusCode::OK {
-              return Err("Error getting city coordinates from geolocation".into());
+            return Err("Error getting city coordinates from geolocation".into());
+        } else {
+            response = response.text().await?
         }
-        let response = response.text().await?;
 
         let json: Value = serde_json::from_str(&response).expect("Couldn't parse coordinates using geocode, try using .coordinates() instead".into());
 
-        let vec_len: usize;
+        let mut vec_len: usize = 0;
 
         match json{
             Value::Array(ref val) => vec_len = val.len(),
-            _ => vec_len = 0
+            _ => {}
         }
         if vec_len < 1 {
            return Err("Error getting city coordinates. Geolocation did not return any coordinates".into());
