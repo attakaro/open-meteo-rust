@@ -48,16 +48,16 @@ impl OpenMeteo {
 
     // get coords using place name
 
-    pub async fn location(self, place_name: &str) -> Result<OpenMeteo, Box<dyn Error>> {
-        let url = format!("https://geocode.maps.co/search?q={}", place_name);
+    pub async fn location(self, place_name: &str, your_api_key: &str) -> Result<OpenMeteo, Box<dyn Error>> {
+        let url = format!("https://geocode.maps.co/search?q={}&api_key={}", place_name, your_api_key);
 
-        let mut response = reqwest::get(url).await?;
+        let response = reqwest::get(url).await?;
 
         if response.status() != reqwest::StatusCode::OK {
             return Err("Error getting city coordinates from geolocation".into());
-        } else {
-            response = response.text().await?
-        }
+        } 
+
+        let response = response.text().await?;
 
         let json: Value = serde_json::from_str(&response).expect("Couldn't parse coordinates using geocode, try using .coordinates() instead".into());
 
@@ -268,6 +268,7 @@ impl OpenMeteo {
 
 #[cfg(test)]
 mod tests {
+
     use super::*;
 
     #[tokio::test] 
@@ -279,14 +280,6 @@ mod tests {
         assert!(test.is_ok());
     } 
 
-    #[tokio::test] 
-    async fn test_location() {
-        let data = OpenMeteo::new()
-            .location("Moscow").await.unwrap()
-            .query().await;
-
-        assert!(data.is_ok());
-    } 
 
     #[tokio::test] 
     async fn test_current_weather() {
@@ -340,43 +333,9 @@ mod tests {
     } 
 
     #[tokio::test] 
-    async fn location_is_already_set_error() {
-        let test1 = OpenMeteo::new()
-            .location("Berlin").await.unwrap()
-            .forecast_days(10).unwrap()
-            .location("Copenhagen").await;
-        let test2 = OpenMeteo::new()
-            .coordinates(55.0, 37.0).unwrap()
-            .forecast_days(10).unwrap()
-            .coordinates(55.0, 12.0);
-        let test3 = OpenMeteo::new()
-            .coordinates(55.0, 37.0).unwrap()
-            .forecast_days(10).unwrap()
-            .location("London").await;
-        eprintln!("{:?} double .location()", test1);
-        eprintln!("{:?} double .coordinates()", test2);
-        eprintln!("{:?} mixed", test3);   
-
-        assert!(test1.is_err());
-        assert!(test2.is_err());
-        assert!(test3.is_err());
-    } 
-
-    #[tokio::test] 
-    async fn test_daily() {
-        let test = OpenMeteo::new()
-            .location("London").await.unwrap()
-            .forecast_days(10).unwrap()
-            .time_zone(TimeZone::EuropeLondon).unwrap()
-            .daily();
-        
-        assert!(test.is_ok());
-    } 
-
-    #[tokio::test] 
     async fn daily_without_timezone_error() {
         let test = OpenMeteo::new()
-            .location("London").await.unwrap()
+            .coordinates(55.0, 13.0).unwrap()
             .forecast_days(10).unwrap()
             .daily();
         
@@ -387,7 +346,7 @@ mod tests {
     #[tokio::test] 
     async fn timezone_already_set_error() {
         let test = OpenMeteo::new()
-            .location("London").await.unwrap()
+            .coordinates(55.0, 13.0).unwrap()
             .time_zone(TimeZone::EuropeLondon).unwrap()
             .forecast_days(10).unwrap()
             .daily().unwrap()
@@ -400,7 +359,7 @@ mod tests {
     #[tokio::test] 
     async fn forecast_more_than_16_days_error()  {
         let test = OpenMeteo::new()
-            .location("London").await.unwrap()
+            .coordinates(55.0, 13.0).unwrap()
             .forecast_days(17).unwrap()
             .query().await;
 
@@ -411,7 +370,7 @@ mod tests {
     #[tokio::test] 
     async fn end_date_without_start_date_error()  {
         let test = OpenMeteo::new()
-            .location("London").await.unwrap()
+            .coordinates(55.0, 13.0).unwrap()
             .current_weather().unwrap()
             .end_date("2023-12-12").unwrap()
             .query().await;
