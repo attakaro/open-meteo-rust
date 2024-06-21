@@ -12,9 +12,10 @@ async fn example() -> Result<(), Box<dyn Error>> {
 
     // parsed json with (almost) all data you may need
     // for more info see open-meteo.com/en/docs
+    // sign up to get a free api key here https://geocode.maps.co/
 
     let data1 = OpenMeteo::new() 
-            .location("London", "your api key").await? // add location (sign up to get a free api key here https://geocode.maps.co/) 
+            .location("London", "your api key").await? // add location
             .forecast_days(10)?  // add forecast data
             .current_weather()?  // add current weather data
             .past_days(10)? // add past days data
